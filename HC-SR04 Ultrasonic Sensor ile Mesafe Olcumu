@@ -1,5 +1,6 @@
 /*
  HC-SR04 Ultrasonik ping mesafe sensörü:
+ nevit.blogspot.com.tr/2014/01/arduino-hc-sr04-ultrasonic-sensor-ile.html
  Datasheet http://users.ece.utexas.edu/~valvano/Datasheets/HCSR04b.pdf
  VCC >> Arduino 5V'a bağlanacak 
  GND >> Arduino GND Toprak
