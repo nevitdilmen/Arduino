@@ -1,0 +1,71 @@
+/**
+ * Read a card using a mfrc522 reader on your SPI interface
+ * Pin layout should be as follows (on Arduino Uno):
+ * SDA: Pin 10
+ * SCK: Pin 13 / ISCP-3
+ * MOSI: Pin 11 / ICSP-4
+ * MISO: Pin 12 / ICSP-1
+ * IRQ: Not used
+ * GND: GND
+ * RST: Pin 9
+ * 3.3v: 3.3v
+ */
+
+// The code will light up a LED and change position of a servo with "any" RFID card approaching. 
+
+#include <Servo.h> // Already included with Arduino software
+#include <SPI.h>  // Already included with Arduino software
+#include <RFID.h>  // Download RFID library from here:  http://www.electrodragon.com/w/images/4/4e/Rfid-master.zip
+
+RFID rfid(10,5); 
+String ReadTxt;
+
+int led = 7; //LED pin
+
+Servo myservo;  // create servo object to control a servo 
+// a maximum of eight servo objects can be created 
+int pos = 0;    // variable to store the servo position 
+
+void setup()
+{ 
+  Serial.begin(9600);
+  SPI.begin(); 
+  rfid.init();
+  pinMode(led, OUTPUT); 
+  myservo.attach(5);  // attaches the servo on pin 9 to the servo object   
+}
+
+void loop()
+{
+  if (rfid.isCard()) {
+    Serial.println("We have a card: ");
+
+    if (rfid.readCardSerial()) {
+      //    Serial.println(" ");
+      Serial.println("Card number : ");
+      Serial.print(rfid.serNum[0],DEC);
+      Serial.print(" , ");
+      Serial.print(rfid.serNum[1],DEC);
+      Serial.print(" , ");
+      Serial.print(rfid.serNum[2],DEC);
+      Serial.print(" , ");
+      Serial.print(rfid.serNum[3],DEC);
+      Serial.print(" , ");
+      Serial.print(rfid.serNum[4],DEC);
+      Serial.println(" ");
+
+      ReadTxt =  String(rfid.serNum[0],HEX)+String(rfid.serNum[1],HEX)+String(rfid.serNum[2],HEX)+String(rfid.serNum[3],HEX)+String(rfid.serNum[4],HEX);
+      Serial.println (ReadTxt);
+      Serial.println (" "); 
+
+      digitalWrite(led, HIGH);   // turn the LED on (HIGH is the voltage level)
+      myservo.write(175);  // tell servo to go to position 175 degrees 
+      
+      delay(5000);               // wait for a second
+
+      digitalWrite(led, LOW);    // turn the LED off by making the voltage LOW
+      myservo.write(5);  // tell servo to go to position 5 degrees 
+    }
+  }
+  rfid.halt();
+}
