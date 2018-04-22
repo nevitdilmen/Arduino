@@ -1,0 +1,67 @@
+/*
+ HC-SR04 Ultrasonik ping mesafe sensörü:
+ Datasheet http://users.ece.utexas.edu/~valvano/Datasheets/HCSR04b.pdf
+ VCC >> Arduino 5V'a bağlanacak 
+ GND >> Arduino GND Toprak
+ Trig >> Arduino pin 8 (Ses gönderme)
+ Echo >> Arduino pin 7 (Eko ses algılama)
+
+ Mikrosaniye olarak gelen yansıma süresinden sesin havadaki hızına göre cm cinsinden mesafeyi hesaplar.  
+ Ses hızı= 343 m/sn , 34300 cm/ sn, 0,0343 cm/mikrosaniye
+ Gidiş geliş süresi = gidiş veya gelişin 2 katıdır.  
+ cmMesafe = microsaniyeSure/ ((343 x 100) / 1000000) / 2 = microsaniyeSure x 0,01715 = 1 / 58,309037900874635568513119533528
+ 
+ This sketch originates from Virtualmix: http://goo.gl/kJ8Gl
+ Has been modified by Winkle ink here: http://winkleink.blogspot.com.au/2012/05/arduino-hc-sr04-ultrasonic-cmMesafe.html
+ And modified further by ScottC here: http://arduinobasics.blogspot.com.au/2012/11/arduinobasics-hc-sr04-ultrasonic-sensor.html
+ Son değişiklikler Nevit Dilmen http://nevit.blogspot.com/
+ 
+ */
+
+#define trigPin 12 // Trigger Pini (Ses gönderme)
+#define echoPin 11 // Echo Pini (Yansıyan ses algılama)
+
+int maksimumMesafe = 200; // Maksimum mesafe. Farketmesi için uzak nesneler daha büyük olmalıdır. 
+int minimumMesafe = 3; // Minimum mesafe 
+long microsaniyeSure, cmMesafe; // Mesafe hesabında kullanılan değişkenler
+
+void setup() {
+ Serial.begin (9600); // Seri iletişimi başlat
+ pinMode(trigPin, OUTPUT); // Ses gönderme pin türünü çıkış olarak ayarla
+ pinMode(echoPin, INPUT);  // Yansıyan ses algılama pin türünü giriş olarak ayarla
+
+}
+
+void loop() {
+/* Aşağıda trigPin/echoPin döngüsü en yakın nesneden yansıyan sesin yansıma süresini hesaplar. */ 
+ digitalWrite(trigPin, LOW); // Hoparlör 2ms sessiz
+ delayMicroseconds(2); 
+
+ digitalWrite(trigPin, HIGH); // Hoparlör 10ms sesli
+ delayMicroseconds(10); 
+ 
+ digitalWrite(trigPin, LOW); // Hoparlör sessiz
+ microsaniyeSure = pulseIn(echoPin, HIGH); // Mikrofonu dinle, yansıma süresini microsaniyeSure değişkenine al
+ 
+// Serial.println(microsaniyeSure); // Sesin gitme ve geri yansıma süresi 
+
+ cmMesafe = microsaniyeSure/58.3; // microsaniyeSure'dan cm olarak mesafeyi hesapla
+ 
+ if (cmMesafe >= maksimumMesafe) // Gelen mesafe aşırı uzak ise 
+ {
+ Serial.println("Cok uzak >200cm");
+ }
+ 
+ else if (cmMesafe <= minimumMesafe) // Gelen mesafe aşırı yakın ise 
+ {
+  Serial.println("Cok yakin < 3cm");   
+ }
+ 
+ else {
+ /* Seri iletişimden ölçülen mesafeyi bilgisayara gönder */
+ Serial.print(cmMesafe); //Mesafe bilgisi
+ Serial.println(" cm"); // Birim değeri
+ }
+ 
+ delay(50);  //Sonraki ölçümden önce bekleme süresi. 
+}
